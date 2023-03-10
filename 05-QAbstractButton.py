@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication, QWidget
-from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox,QStyle
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QSize
+from PyQt5.QtWidgets import QPushButton, QRadioButton, QCheckBox, QStyle, QGraphicsEllipseItem
+from PyQt5.QtGui import QIcon, QPainter, QPen
+from PyQt5.QtCore import Qt, QSize, QRectF
 
 class Window(QWidget):
     def __init__(self) -> None:
@@ -23,6 +23,8 @@ class Window(QWidget):
         self.QAbstractButtonTestStatus()
         self.QAbstractButtonTestExclusive()
         self.QAbstractButtonTestClick()
+        self.QAbstractButtonTestArea()
+        self.QAbstractButtonTestSignal()
     
     def btnTextPlusOne(self):
         num = int(self.btn.text()) + 1
@@ -112,6 +114,47 @@ class Window(QWidget):
             
         self.btn.clicked.connect(animateClick)
 
+    def QAbstractButtonTestArea(self) -> None:
+        """在按钮上创建一个椭圆形区域， 只有按到椭圆形区域中才会响应， 其余不产生响应
+        """
+        class customBtn(QPushButton):
+            def paintEvent(self, a0) -> None:
+                super().paintEvent(a0)
+                
+                painter = QPainter(self)
+                painter.setPen(QPen(Qt.GlobalColor.cyan, 6))
+                painter.drawEllipse(self.rect())
+                                
+            def hitButton(self, pos) -> bool:
+                ellipse = QGraphicsEllipseItem()
+                ellipse.setRect(QRectF(self.rect()))
+                
+                if ellipse.contains(pos):
+                    return True
+                else:
+                    return False
+                
+            def hitValidArea(self):
+                print("you hit the button valid area.")
+            
+        button = customBtn(self)
+        self.movebase = 450
+        
+        button.resize(100, 50)
+        button.move(20, self.movebase)
+        button.pressed.connect(button.hitValidArea)
+    
+    def QAbstractButtonTestSignal(self) -> None:
+        button = QPushButton(self)
+        self.movebase = 510
+        
+        button.move(20, self.movebase)
+        
+        button.pressed.connect(lambda: print("button pressed."))
+        button.released.connect(lambda: print("button released."))
+        button.clicked.connect(lambda checked: print("button clicked.", checked))
+        button.toggled.connect(lambda checked: print("button toggled.", checked))
+    
 if __name__ == '__main__':
     import sys
     
